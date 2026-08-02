@@ -71,6 +71,7 @@ body::before {
     align-items: center;
     z-index: 99999;
     overflow: hidden;
+    animation: loaderExit 1s 5s forwards ease-in;
 }
 
 .loader-bg span {
