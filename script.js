@@ -15,35 +15,51 @@ if (typeof Lenis !== 'undefined') {
     }
     requestAnimationFrame(raf);
 }
-
 /* =========================================================================
-   2. GSAP SCROLLTRIGGER INTERACTIVE SUITE
+   DIRECT HERO ENTRANCE (NO LOADER)
 ========================================================================= */
-if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-    gsap.registerPlugin(ScrollTrigger);
-}
-
-// Intro Loader Trigger Sequence
-window.addEventListener("load", () => {
-    document.querySelectorAll(".loader-name span").forEach((span, index) => {
-        span.style.setProperty("--i", index + 1);
-    });
-
-    const loader = document.getElementById("introLoader");
+document.addEventListener("DOMContentLoaded", () => {
+    // Ensure body is visible immediately
+    document.body.style.opacity = "1";
+    document.body.style.overflowX = "hidden";
     
-    setTimeout(() => {
-        if (loader) {
-            loader.classList.add("hide");
-            executeHeroEntrance();
-        }
-    }, 3200);
+    executeHeroEntrance();
 });
 
+function executeHeroEntrance() {
+    if (typeof gsap === 'undefined') return;
+
+    const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+    
+    tl.to(".navbar", { y: 0, opacity: 1, duration: 1 })
+      .from(".hello", { y: 30, opacity: 0, duration: 0.6 }, "-=0.5")
+      .from(".hero-title h1 span", { y: 50, opacity: 0, stagger: 0.1, duration: 0.8 }, "-=0.4")
+      .from(".lastname", { opacity: 0, letterSpacing: "25px", duration: 0.8 }, "-=0.6")
+      .from(".hero-title h2", { y: 30, opacity: 0, duration: 0.6 }, "-=0.6")
+      .from(".hero-description", { y: 20, opacity: 0, duration: 0.6 }, "-=0.5")
+      .from(".hero-buttons a", { y: 20, opacity: 0, stagger: 0.15, duration: 0.6 }, "-=0.4")
+      .from(".profile-orb", { scale: 0.5, opacity: 0, duration: 1, ease: "elastic.out(1, 0.75)" }, "-=0.8")
+      .from(".floating-card", { scale: 0.8, opacity: 0, stagger: 0.2, duration: 0.8 }, "-=0.6");
+
+    gsap.utils.toArray(".section-heading, .about-text, .skill-card, .project-card, .notice-card, .package-box").forEach(item => {
+        gsap.from(item, {
+            scrollTrigger: {
+                trigger: item,
+                start: "top 88%",
+                toggleActions: "play none none none"
+            },
+            y: 50,
+            opacity: 0,
+            duration: 0.85,
+            ease: "power3.out"
+        });
+    });
+}
 // Fail-safe Timer
 setTimeout(() => {
     const loader = document.getElementById("introLoader");
     if (loader && !loader.classList.contains("hide")) {
-        loader.classList.add("hide");
+        hideLoader();
         executeHeroEntrance();
     }
 }, 4000);
@@ -63,11 +79,7 @@ function executeHeroEntrance() {
       .from(".profile-orb", { scale: 0.5, opacity: 0, duration: 1, ease: "elastic.out(1, 0.75)" }, "-=0.8")
       .from(".floating-card", { scale: 0.8, opacity: 0, stagger: 0.2, duration: 0.8 }, "-=0.6");
 
-    gsap.to(".profile-orb", { y: 12, duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut" });
-    gsap.to(".card-one", { y: 8, duration: 2.5, repeat: -1, yoyo: true, ease: "sine.inOut" });
-    gsap.to(".card-two", { y: -8, duration: 2.8, repeat: -1, yoyo: true, ease: "sine.inOut" });
-
-    gsap.utils.toArray(".section-heading, .about-text, .skill-card, .project-card").forEach(item => {
+    gsap.utils.toArray(".section-heading, .about-text, .skill-card, .project-card, .notice-card, .package-box").forEach(item => {
         gsap.from(item, {
             scrollTrigger: {
                 trigger: item,
@@ -83,23 +95,53 @@ function executeHeroEntrance() {
 }
 
 /* =========================================================================
-   3. CURSOR & INTERACTIVE PARALLAX MODULES
+   3. CURSOR & 3D PARALLAX TILT MODULES
 ========================================================================= */
-const orb = document.querySelector(".profile-orb");
+const orbContainer = document.querySelector(".profile-orb-container");
 const cardOne = document.querySelector(".card-one");
 const cardTwo = document.querySelector(".card-two");
 
 document.addEventListener("mousemove", (e) => {
     if (typeof gsap === 'undefined') return;
     
-    const x = (e.clientX / window.innerWidth - 0.5) * 25;
-    const y = (e.clientY / window.innerHeight - 0.5) * 25;
+    const x = (e.clientX / window.innerWidth - 0.5) * 30;
+    const y = (e.clientY / window.innerHeight - 0.5) * 30;
 
-    if (orb && window.innerWidth > 968) {
-        gsap.to(orb, { x: x, y: y, duration: 0.8, ease: "power2.out" });
-        gsap.to(cardOne, { x: x * 0.5, y: y * 0.5, duration: 1 });
-        gsap.to(cardTwo, { x: -x * 0.4, y: -y * 0.4, duration: 1 });
+    if (orbContainer && window.innerWidth > 968) {
+        gsap.to(orbContainer, { 
+            rotationY: x * 1.2, 
+            rotationX: -y * 1.2, 
+            duration: 0.8, 
+            ease: "power2.out" 
+        });
+        gsap.to(cardOne, { x: x * 0.7, y: y * 0.7, duration: 1 });
+        gsap.to(cardTwo, { x: -x * 0.6, y: -y * 0.6, duration: 1 });
     }
+});
+
+const projectCards = document.querySelectorAll(".project-card");
+projectCards.forEach(card => {
+    card.addEventListener("mousemove", (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        card.style.setProperty("--mouse-x", `${x}px`);
+        card.style.setProperty("--mouse-y", `${y}px`);
+
+        if (window.innerWidth > 968) {
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -10;
+            const rotateY = ((x - centerX) / centerX) * 10;
+
+            card.style.transform = `translateY(-12px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        }
+    });
+
+    card.addEventListener("mouseleave", () => {
+        card.style.transform = "translateY(0px) rotateX(0deg) rotateY(0deg)";
+    });
 });
 
 /* =========================================================================
@@ -174,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     submitBtn.innerHTML = "Message Transmitted Successfully! ✓";
                     submitBtn.style.background = "#ff0033";
                     submitBtn.style.color = "#fff";
-                    submitBtn.style.boxShadow = "0 0 30px rgba(255, 0, 51, 0.4)";
+                    submitBtn.style.boxShadow = "0 0 30px rgba(255, 0, 51, 0.5)";
                     contactForm.reset();
                     
                     setTimeout(() => {
